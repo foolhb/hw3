@@ -75,6 +75,8 @@ struct metadata {
 struct headers {
     ethernet_t   ethernet;
     ipv4_t       ipv4;
+    udp_t udp;
+    tcp_t tcp;
 }
 
 /*************************************************************************
