@@ -1,0 +1,12 @@
+How many hours did you spend on this assignment?
+About 20 hours
+
+Would you rate it as easy, moderate, or difficult?
+I think it's difficult for me. Though the code itself isn't super long, but I spent a lot of time in learning P4 and
+code testing seems a little bit hard to me
+
+If you worked with a partner, please briefly describe both of your contributions to the solution you submitted.
+
+How deeply do you feel you understand the material it covers (0%-100%)?
+90%. The only thing I'm not quite sure is some P4 language details. But basically I understand the workflow and the main idea.
+
