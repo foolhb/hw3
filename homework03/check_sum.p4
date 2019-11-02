@@ -24,31 +24,33 @@ header myTunnel_t {
 }
 
 header tcp_t {
-    bit<16>   srcPort;
-    bit<16>   destPort;
-    bit<32>   seqNum;
-    bit<32>   ackNum;
-    bit<4>    dataOffset;
-    bit<3>    reserved;
-    bit<1>    ns;
-    bit<1>    cwr;
-    bit<1>    ece;
-    bit<1>    urg;
-    bit<1>    ack;
-    bit<1>    psh;
-    bit<1>    pst;
-    bit<1>    syn;
-    bit<1>    fin;
-    bit<16>   windowSize;
-    bit<16>   checkSum;
-    bit<16>   urgentPtr;
+    bit<4>    version;
+    bit<4>    ihl;
+    bit<8>    diffserv;
+    bit<16>   totalLen;
+    bit<16>   identification;
+    bit<3>    flags;
+    bit<13>   fragOffset;
+    bit<8>    ttl;
+    bit<8>    protocol;
+    bit<16>   hdrChecksum;
+    ip4Addr_t srcAddr;
+    ip4Addr_t dstAddr;
 }
 
 header udp_t {
-    bit<16>   srcPort;
-    bit<16>   destPort;
-    bit<16>   length;
-    bit<16>   checksum;
+    bit<4>    version;
+    bit<4>    ihl;
+    bit<8>    diffserv;
+    bit<16>   totalLen;
+    bit<16>   identification;
+    bit<3>    flags;
+    bit<13>   fragOffset;
+    bit<8>    ttl;
+    bit<8>    protocol;
+    bit<16>   hdrChecksum;
+    ip4Addr_t srcAddr;
+    ip4Addr_t dstAddr;
 }
 
 header ipv4_t {
@@ -109,7 +111,7 @@ parser MyParser(packet_in packet,
 ************   C H E C K S U M    V E R I F I C A T I O N   *************
 *************************************************************************/
 
-control MyVerifyChecksum(inout headers hdr, inout metadata meta) {   
+control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
     apply {
 	verify_checksum(
 	    true,
@@ -141,7 +143,7 @@ control MyIngress(inout headers hdr,
     action drop() {
         mark_to_drop(standard_metadata);
     }
-    
+
     action ipv4_forward(egressSpec_t port) {
         standard_metadata.egress_spec = port;
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
@@ -166,28 +168,20 @@ control MyIngress(inout headers hdr,
             hdr.ethernet.srcAddr: ternary;
             hdr.ipv4.srcAddr: ternary;
             hdr.ipv4.dstAddr: ternary;
-            hdr.tcp.srcPort: ternary;
-            hdr.tcp.destPort: ternary;
-            hdr.udp.srcPort: ternary;
-            hdr.udp.destPort: ternary;
+            hdr.tcp.srcAddr: ternary;
+            hdr.tcp.dstAddr: ternary;
+            hdr.udp.srcAddr: ternary;
+            hdr.udp.dstAddr: ternary;
         }
         actions = {
             drop;
             NoAction;
         }
     }
-    
+
     apply {
         // Process only IPv4 packets.
         if (hdr.ipv4.isValid() && standard_metadata.checksum_error == 0) {
-            hash(x, HashAlgorithm.crc16, 0, { hdr.ipv4.dstAddr }, 2);
-            if (x == 0){
-                hdr.ipv4.dstAddr = 0x0a000216;
-                hdr.ethernet.dstAddr = 0x080000000222;
-            } else {
-                hdr.ipv4.dstAddr = 0x0a000321;
-                hdr.ethernet.dstAddr = 0x080000000333;
-            }
 	    ipv4_lpm.apply();
 	    acl.apply();
         } else {
@@ -238,8 +232,6 @@ control MyDeparser(packet_out packet, in headers hdr) {
     apply {
         packet.emit(hdr.ethernet);
         packet.emit(hdr.ipv4);
-        packet.emit(hdr.tcp);
-        packet.emit(hdr.udp);
     }
 }
 

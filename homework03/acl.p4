@@ -180,14 +180,7 @@ control MyIngress(inout headers hdr,
     apply {
         // Process only IPv4 packets.
         if (hdr.ipv4.isValid() && standard_metadata.checksum_error == 0) {
-            hash(x, HashAlgorithm.crc16, 0, { hdr.ipv4.dstAddr }, 2);
-            if (x == 0){
-                hdr.ipv4.dstAddr = 0x0a000216;
-                hdr.ethernet.dstAddr = 0x080000000222;
-            } else {
-                hdr.ipv4.dstAddr = 0x0a000321;
-                hdr.ethernet.dstAddr = 0x080000000333;
-            }
+
 	    ipv4_lpm.apply();
 	    acl.apply();
         } else {
