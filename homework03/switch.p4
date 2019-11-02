@@ -190,7 +190,8 @@ control MyIngress(inout headers hdr,
                 bit<1> host2 = 0;
                 bit<8> base = 0;
                 bit<8> max = 2;
-                hash(x, HashAlgorithm.crc16, base, { hdr.ipv4.dstAddr, hdr.ipv4.srcAddr, hdr.ethernet.srcAddr, hdr.ethernet.dstAddr }, max);
+                // Hash several field to oreserve flow affinity
+                hash(x, HashAlgorithm.crc16, base, { hdr.ipv4.dstAddr, hdr.ipv4.srcAddr, hdr.ipv4.protocol, hdr.ethernet.srcAddr, hdr.ethernet.dstAddr }, max);
                 if (x == host2){
                 // Modify the destination address
                     hdr.ipv4.dstAddr = 0x0a000216;
