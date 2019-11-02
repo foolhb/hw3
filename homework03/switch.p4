@@ -184,10 +184,12 @@ control MyIngress(inout headers hdr,
     apply {
         // Process only IPv4 packets.
         if (hdr.ipv4.isValid() && standard_metadata.checksum_error == 0) {
-            if(hdr.ipv4.srcAddr == 0x0a00010b && hdr.ethernet.dstAddr == 0x080000000111){
+        // Check if it's a package to the fictious via host 1. If true, hash the header and re-route
+            if(hdr.ipv4.srcAddr == 0x0a00010b && hdr.ethernet.srcAddr == 0x080000000111 && hdr.ipv4.destAddr == 0x0a000063){
                 bit<1> x;
                 hash(x, HashAlgorithm.crc16, 0, { hdr.ipv4.dstAddr, hdr.ipv4.srcAddr, hdr.ethernet.srcAddr, hdr.ethernet.dstAddr }, 2);
                 if (x == 0){
+                // Modify the destination address
                     hdr.ipv4.dstAddr = 0x0a000216;
                     hdr.ethernet.dstAddr = 0x080000000222;
                 } else {
@@ -195,7 +197,6 @@ control MyIngress(inout headers hdr,
                     hdr.ethernet.dstAddr = 0x080000000333;
                 }
             }
-
 	    ipv4_lpm.apply();
 	    acl.apply();
         } else {

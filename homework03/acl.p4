@@ -160,6 +160,7 @@ control MyIngress(inout headers hdr,
         default_action = NoAction();
     }
 
+    // Add a table acl to check the related header field. If any of them true, drop it
     table acl {
         key = {
             hdr.ethernet.dstAddr: ternary;
@@ -175,6 +176,9 @@ control MyIngress(inout headers hdr,
             drop;
             NoAction;
         }
+
+        size = 1024;
+        default_action = NoAction();
     }
     
     apply {
